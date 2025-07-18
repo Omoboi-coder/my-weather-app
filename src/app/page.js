@@ -1,103 +1,145 @@
+"use client";
+import React, { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 
 export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.js
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [query, setQuery] = useState("New York, US");
+  const [forecastByDay, setForecastByDay] = useState({});
+  const [locationName, setLocationName] = useState(""); // ✅ NEW
+  const [error, setError] = useState("");
+  const inputRef = useRef(null);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+  const API_KEY = "aa76d9013bbc5a6fd96d1f515c7037db";
+
+  const getWeather = async () => {
+    try {
+      const res = await fetch(
+        `https://api.openweathermap.org/data/2.5/forecast?q=${query}&appid=${API_KEY}&units=metric`
+      );
+      const data = await res.json();
+
+      if (data.cod === "404") {
+        setForecastByDay({});
+        return setError("Location not found.");
+      }
+
+      const grouped = {};
+      const nowUTC = new Date();
+      const nowLocalTime = new Date(nowUTC.getTime() + data.city.timezone * 1000);
+
+      data.list.forEach((item) => {
+        const localTime = new Date((item.dt + data.city.timezone) * 1000);
+        const hour = localTime.getHours();
+        if (hour < 0 || hour > 21) return;
+
+        const isToday = localTime.toDateString() === nowLocalTime.toDateString();
+        if (isToday && localTime < nowLocalTime) return;
+
+        const day = localTime.toLocaleDateString(undefined, { weekday: "long" });
+        if (!grouped[day]) grouped[day] = [];
+        grouped[day].push({ ...item, localTime });
+      });
+
+      const groupedEntries = Object.entries(grouped).slice(0, 5);
+      setForecastByDay(Object.fromEntries(groupedEntries));
+
+      setLocationName(`${data.city.name}, ${data.city.country}`); 
+      setQuery(`${data.city.name}, ${data.city.country}`);  
+      setError("");
+    } catch (err) {
+      console.error(err);
+      setError("Failed to fetch weather.");
+    }
+  };
+
+  useEffect(() => {
+    getWeather();
+  }, []);
+
+  const cardGradients = [
+    "from-blue-800 to-cyan-700",
+    "from-blue-700 to-cyan-600",
+    "from-blue-600 to-cyan-500",
+    "from-blue-500 to-cyan-500",
+    "from-blue-400 to-cyan-300",
+  ];
+
+  return (
+    <main className="min-h-screen w-screen overflow-x-hidden bg-gradient-to-br from-blue-100 to-blue-300 flex flex-col items-center justify-start p-4">
+      <h1 className="text-2xl md:mt-2 md:text-4xl font-bold mb-4 text-blue-800 text-center">
+        5-Day Forecast
+      </h1>
+
+      {/* 🔍 Search */}
+      <div className="flex flex-col md:flex-row gap-4 mb-4 items-center justify-center w-full">
+        <input
+          ref={inputRef}
+          type="text"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") getWeather();
+          }}
+          placeholder="Enter city or country..."
+          className="px-4 py-2 text-xl md:text-2xl md:font-semibold rounded-md border border-gray-300 w-[90vw] sm:w-[300px] shadow focus:outline-none"
+        />
+
+        <button
+          onClick={() => getWeather()}
+          className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-base w-[90vw] md:text-lg md:w-auto"
         >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+          Search
+        </button>
+      </div>
+
+      {error && <p className="text-red-600 text-center mb-4">{error}</p>}
+
+      {/* 📅 Forecast Cards */}
+      <div className="flex flex-col justify-center items-center w-full gap-4 md:mt-2 md:items-start md:flex-row md:min-h-[70vh] md:overflow-auto">
+        {Object.entries(forecastByDay).map(([day, entries], i) => {
+          const cardGradient = cardGradients[i % cardGradients.length];
+          return (
+            <div
+              key={day}
+              className={`bg-gradient-to-br ${cardGradient} text-white p-3 rounded-2xl shadow-lg w-[90vw] md:w-60`}
+            >
+              <h2 className="text-xl md:text-2xl font-semibold text-center uppercase">{day}</h2>
+              {/* ✅ Show location below the day */}
+              <p className="text-lg md:text-lg font-semibold text-center mt-1 mb-1 ">{locationName}</p>
+
+              <div className="flex flex-col gap-2">
+                {entries.map((item, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center justify-between text-white px-2 py-1 rounded-md backdrop-blur-sm text-md md:text-sm"
+                  >
+                    <div>
+                      {item.localTime.toLocaleTimeString(undefined, {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </div>
+                    <div className="font-semibold">
+                      {Math.round(item.main.temp)}<span className="font-serif">°C</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <div className="w-10 h-10 md:w-7 md:h-7 relative">
+                        <Image
+                          src={`https://openweathermap.org/img/wn/${item.weather[0].icon}@2x.png`}
+                          alt={item.weather[0].main}
+                          fill
+                          className="object-contain"
+                        />
+                      </div>
+                      <span>{item.weather[0].main}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </main>
   );
 }
