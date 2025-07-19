@@ -5,7 +5,7 @@ import Image from "next/image";
 export default function Home() {
   const [query, setQuery] = useState("New York, US");
   const [forecastByDay, setForecastByDay] = useState({});
-  const [locationName, setLocationName] = useState(""); // ✅ NEW
+  const [locationName, setLocationName] = useState(""); 
   const [error, setError] = useState("");
   const inputRef = useRef(null);
 
@@ -65,13 +65,16 @@ export default function Home() {
   ];
 
   return (
-    <main className="min-h-screen w-screen overflow-x-hidden bg-gradient-to-br from-blue-100 to-blue-300 flex flex-col items-center justify-start p-4">
-      <h1 className="text-2xl md:mt-2 md:text-4xl font-bold mb-4 text-blue-800 text-center">
+    <main className="min-h-screen w-screen overflow-x-hidden bg-gradient-to-br
+     from-blue-100 to-blue-300 flex flex-col items-center justify-start p-4">
+      <h1 className="text-2xl mt-8 md:mt-2 md:text-4xl font-bold mb-4 text-blue-800
+       text-center">
         5-Day Forecast
       </h1>
 
-      {/* 🔍 Search */}
-      <div className="flex flex-col md:flex-row gap-4 mb-4 items-center justify-center w-full">
+      {/* Search */}
+      <div className="flex flex-col md:flex-row gap-4 mb-4 items-center justify-center
+       w-full">
         <input
           ref={inputRef}
           type="text"
@@ -81,12 +84,14 @@ export default function Home() {
             if (e.key === "Enter") getWeather();
           }}
           placeholder="Enter city or country..."
-          className="px-4 py-2 text-xl md:text-2xl md:font-semibold rounded-md border border-gray-300 w-[90vw] sm:w-[300px] shadow focus:outline-none"
+          className="px-4 py-2 text-xl text-black md:text-[23px] md:font-semibold rounded-md 
+          border border-gray-500 md:border-gray-400 w-[90vw] sm:w-[300px] shadow focus:outline-none"
         />
 
         <button
           onClick={() => getWeather()}
-          className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-base w-[90vw] md:text-lg md:w-auto"
+          className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md
+           text-base w-[90vw] md:text-lg md:w-auto"
         >
           Search
         </button>
@@ -94,24 +99,27 @@ export default function Home() {
 
       {error && <p className="text-red-600 text-center mb-4">{error}</p>}
 
-      {/* 📅 Forecast Cards */}
-      <div className="flex flex-col justify-center items-center w-full gap-4 md:mt-2 md:items-start md:flex-row md:min-h-[70vh] md:overflow-auto">
+      {/* Forecast Cards */}
+      <div className="flex flex-col justify-center items-center w-full gap-4 md:mt-2
+       md:items-start md:flex-row md:min-h-[70vh] md:overflow-auto">
         {Object.entries(forecastByDay).map(([day, entries], i) => {
           const cardGradient = cardGradients[i % cardGradients.length];
           return (
             <div
               key={day}
-              className={`bg-gradient-to-br ${cardGradient} text-white p-3 rounded-2xl shadow-lg w-[90vw] md:w-60`}
+              className={`bg-gradient-to-br ${cardGradient} text-white p-3 rounded-2xl
+               shadow-lg w-[90vw] md:w-60`}
             >
               <h2 className="text-xl md:text-2xl font-semibold text-center uppercase">{day}</h2>
-              {/* ✅ Show location below the day */}
+              
               <p className="text-lg md:text-lg font-semibold text-center mt-1 mb-1 ">{locationName}</p>
 
               <div className="flex flex-col gap-2">
                 {entries.map((item, index) => (
                   <div
                     key={index}
-                    className="flex items-center justify-between text-white px-2 py-1 rounded-md backdrop-blur-sm text-md md:text-sm"
+                    className="flex items-center justify-between text-white px-2 py-1 rounded-md
+                     backdrop-blur-sm text-md md:text-sm"
                   >
                     <div>
                       {item.localTime.toLocaleTimeString(undefined, {
