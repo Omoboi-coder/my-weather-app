@@ -67,7 +67,7 @@ export default function Home() {
   return (
     <main className="min-h-screen w-screen overflow-x-hidden bg-gradient-to-br
      from-blue-100 to-blue-300 flex flex-col items-center justify-start p-4">
-      <h1 className="text-2xl mt-8 md:mt-2 md:text-4xl font-bold mb-4 text-blue-800
+      <h1 className="text-[32px] mt-8 md:mt-2 md:text-4xl font-bold mb-4 text-blue-800
        text-center">
         5-Day Forecast
       </h1>
@@ -110,7 +110,7 @@ export default function Home() {
               className={`bg-gradient-to-br ${cardGradient} text-white p-3 rounded-2xl
                shadow-lg w-[90vw] md:w-60`}
             >
-              <h2 className="text-xl md:text-2xl font-semibold text-center uppercase">{day}</h2>
+              <h2 className="text-2xl md:text-2xl font-semibold text-center uppercase">{day}</h2>
               
               <p className="text-lg md:text-lg font-semibold text-center mt-1 mb-1 ">{locationName}</p>
 
